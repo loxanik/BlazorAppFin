@@ -1,5 +1,7 @@
 using BlazorAppFin.Client.Shared.Interfaces;
 using BlazorAppFin.Components;
+using BlazorAppFin.Data;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 namespace BlazorAppFin
@@ -16,6 +18,9 @@ namespace BlazorAppFin
 
             builder.Services.AddOpenApi();
             builder.Services.AddControllers();
+
+            builder.Services.AddDbContext<AppDbContext>(options => 
+                options.UseSqlite("Data Source=finance.db"));
 
             builder.Services.AddScoped<ITransactionService, BlazorAppFin.Client.Services.InMemoryTransactionService>();
 
