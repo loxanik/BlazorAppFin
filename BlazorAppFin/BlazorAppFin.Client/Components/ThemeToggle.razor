@@ -1,0 +1,38 @@
+﻿@inject IJSRuntime JS
+
+<button @onclick="ToggleTheme" title="Переключить тему">
+    @if (isDark)
+    {
+        <span>☀️ Светлая тема</span>
+    }
+    else
+    {
+        <span>🌙 Темная тема</span>
+    }
+</button>
+
+@code {
+    private bool isDark;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Запрашиваем текущую тему из localStorage через JS-интерлоп
+            var currentTheme = await JS.InvokeAsync<string>("themeManager.getTheme");
+            isDark = currentTheme == "dark";
+
+            // Заставляем Blazor перерисовать кнопку с правильным текстом/иконкой
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDark = !isDark;
+        string themeToSend = isDark ? "dark" : "light";
+
+        // Сохраняем тему и меняем атрибут у <html>
+        await JS.InvokeVoidAsync("themeManager.setTheme", themeToSend);
+    }
+}
