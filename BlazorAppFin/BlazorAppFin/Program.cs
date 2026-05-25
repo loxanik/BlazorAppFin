@@ -50,7 +50,7 @@ namespace BlazorAppFin
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
                 .AddInteractiveWebAssemblyRenderMode()
-                .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
+                .AddAdditionalAssemblies(typeof(Client.Layout.MainLayout).Assembly);
 
             app.Run();
         }
