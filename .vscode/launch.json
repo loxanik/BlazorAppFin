@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Запуск Blazor (Chromium)",
+            "name": "Запуск Blazor (Сервер + 2 Вкладки)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -13,16 +13,25 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "serverReadyAction": {
-                "action": "debugWithChrome",
-                // Ловим чистый HTTP порт, игнорируя HTTPS сертификаты
+                "action": "startDebugging",
                 "pattern": "(http://localhost:\\d+)",
-                // Принудительно открываем именно Chromium в CachyOS
-                "runtimeExecutable": "/usr/bin/chromium",
-                "runtimeArgs": [
-                    "--no-first-run",
-                    "--no-default-browser-check"
-                ]
+                "name": "Запуск Chromium (Две Вкладки)"
             }
+        },
+        {
+            "name": "Запуск Chromium (Две Вкладки)",
+            "type": "chrome",
+            "request": "launch",
+            // Оставляем для дебаггера, чтобы он знал, куда подключаться
+            "url": "http://localhost:5263", 
+            "runtimeExecutable": "/usr/bin/chromium", 
+            "runtimeArgs": [
+                "--no-first-run",
+                "--no-default-browser-check",
+                // Передаем ОФИЦИАЛЬНО ОБЕ ссылки как аргументы запуска:
+                "http://localhost:5263",
+                "http://localhost:5263/scalar/v1"
+            ]
         }
     ]
 }

@@ -125,6 +125,11 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		await LoadTransactions();
+	}
+
+	private async Task LoadTransactions()
+	{
 		transactions = await TransactionService.GetTransactionsAsync();
 	}
 
@@ -135,11 +140,17 @@ else
 		if (result.IsSuccess)
 		{
 			newTransaction = new();
+			await LoadTransactions();
 		}
 	}
 
 	private async Task DeleteItem(Guid guid)
 	{
 		var result = await TransactionService.DeleteTransactionAsync(guid);
+
+		if (result.IsSuccess)
+		{
+			await LoadTransactions();
+		}
 	}
 }

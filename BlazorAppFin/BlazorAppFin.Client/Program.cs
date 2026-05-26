@@ -10,7 +10,12 @@ namespace BlazorAppFin.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            builder.Services.AddScoped<ITransactionService, InMemoryTransactionService>();
+            builder.Services.AddScoped(sp => new HttpClient
+            {
+                BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+            });
+
+            builder.Services.AddScoped<ITransactionService, BlazorTransactionService>();
 
             await builder.Build().RunAsync();
         }

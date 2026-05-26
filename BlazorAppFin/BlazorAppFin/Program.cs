@@ -8,7 +8,7 @@ namespace BlazorAppFin
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +19,23 @@ namespace BlazorAppFin
             builder.Services.AddOpenApi();
             builder.Services.AddControllers();
 
-            builder.Services.AddDbContext<AppDbContext>(options => 
-                options.UseSqlite("Data Source=finance.db"));
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            {
+                var dbPath = Path.Combine(AppContext.BaseDirectory, "finance.bd");
+
+                options.UseSqlite($"Data Source={dbPath}");
+            });
 
             builder.Services.AddScoped<ITransactionService, BlazorAppFin.Client.Services.InMemoryTransactionService>();
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                await dbContext.Database.MigrateAsync();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
