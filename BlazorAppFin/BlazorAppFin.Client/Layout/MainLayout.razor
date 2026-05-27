@@ -1,7 +1,7 @@
 ﻿@using BlazorAppFin.Client.Components
 @inherits LayoutComponentBase
 
-<body class="app-container">
+<div class="app-layout">
 
 	<header class="top-bar">
 		<nav>
@@ -11,16 +11,16 @@
 		</nav>
 	</header>
 
-	<main style="height: 100vh;">
+	<main class="main-content"">
 		@Body
 
 	</main>
 
-	<footer>
+	<footer class="bottom-bar">
 		<ThemeToggle />
 	</footer>
 
-</body>
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
 	An unhandled error has occurred.

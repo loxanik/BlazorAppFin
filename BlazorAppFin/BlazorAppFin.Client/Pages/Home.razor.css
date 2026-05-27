@@ -1,12 +1,14 @@
 ﻿.overview {
     display: flex;
+    justify-content: space-between;
     padding: 10px;
-    margin: 10px 0;
-    gap: 10px;
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .overview-card {
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -43,6 +45,38 @@
 
 table {
     border: 1px solid var(--border);
-    padding: 5px;
+    padding: 10px;
     border-radius: 5px;
+}
+
+table th,
+table tb {
+    padding: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 32px;
+}
+
+.responsive-table {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 720px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview {
+        flex-direction: column;
+    }
 }

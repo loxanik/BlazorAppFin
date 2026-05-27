@@ -53,6 +53,8 @@ h1:focus {
     --bg-card: #ffffff; /* Белый фон карточек и таблиц */
     --border: #e2e8f0; /* Светлые границы */
 
+    --bg-footer: #f1f5f9;
+
     --text-main: #0f172a; /* Темно-синий/почти черный текст */
     --text-muted: #64748b; /* Серый приглушенный текст */
 
@@ -67,6 +69,8 @@ html[data-theme="dark"] {
 
     --text-main: #f8fafc; /* Белый текст */
     --text-muted: #94a3b8; /* Светло-серый приглушенный текст */
+
+    --bg-footer: #111827;
 
     --shadow: rgba(0, 0, 0, 0.3);
     --primary-light: rgba(16, 185, 129, 0.2);

@@ -18,3 +18,24 @@
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    padding: 20px 20px 0 20px;
+}
+
+.main-content {
+    flex: 1 0 auto;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.bottom-bar {
+    margin-top: 10px;
+    flex-shrink: 0;
+    background-color: var(--bg-footer);
+    padding: 20px;
+}

@@ -5,7 +5,6 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<h1>Статистика</h1>
 
 @if (transactions == null)
 {
@@ -13,6 +12,9 @@
 }
 else
 {
+
+	<h1>Статистика</h1>
+
 	<div class="overview">
 
 		<div class="overview-card">
@@ -32,86 +34,98 @@ else
 
 	</div>
 
-	<h1>Добавить</h1>
-	<div class="add-card">
+	
+	<div class="dashboard-grid">
 
-		<EditForm FormName="addNewTransaction" Model="newTransaction" OnValidSubmit="HandleValidSubmit">
-			<DataAnnotationsValidator />
+		<div class="grid-left">
+			<h1>Добавить</h1>
+			<div class="add-card">
 
-			<div class="add-card-inner">
+				<EditForm FormName="addNewTransaction" Model="newTransaction" OnValidSubmit="HandleValidSubmit">
+					<DataAnnotationsValidator />
 
-				<label for="date">Дата: </label>
-				<InputDate id="date" @bind-Value="newTransaction.Date"/>
+					<div class="add-card-inner">
 
-				<ValidationMessage For="() => newTransaction.Date"/>
+						<label for="date">Дата: </label>
+						<InputDate id="date" @bind-Value="newTransaction.Date" />
 
-				<label for="category">Категория: </label>
-				<InputText id="category" @bind-Value="newTransaction.Category"/>
+						<ValidationMessage For="() => newTransaction.Date" />
 
-				<ValidationMessage For="() => newTransaction.Category" />
+						<label for="category">Категория: </label>
+						<InputText id="category" @bind-Value="newTransaction.Category" />
+
+						<ValidationMessage For="() => newTransaction.Category" />
 
 				
-				<label for="type">Тип: </label>
-				<InputSelect id="type" @bind-Value="newTransaction.Type">
-					<option value="">Выберите тип</option>
-					<option value="@TransactionDto.TransactionType.Income">Доход</option>
-					<option value="@TransactionDto.TransactionType.Expense">Трата</option>
-				</InputSelect>
+						<label for="type">Тип: </label>
+						<InputSelect id="type" @bind-Value="newTransaction.Type">
+							<option value="">Выберите тип</option>
+							<option value="@TransactionDto.TransactionType.Income">Доход</option>
+							<option value="@TransactionDto.TransactionType.Expense">Трата</option>
+						</InputSelect>
 
-				<ValidationMessage For="() => newTransaction.Type" />
-				
-				<label for="amount">Сумма: </label>
-				<InputNumber id="amount" @bind-Value="newTransaction.Amount" />
+						<ValidationMessage For="() => newTransaction.Type" />
 
-				<ValidationMessage For="() => newTransaction.Amount" />
+						<label for="amount">Сумма: </label>
+						<InputNumber id="amount" @bind-Value="newTransaction.Amount" />
 
-				<label for="description">Описание: </label>
-				<InputText id="description" @bind-Value="newTransaction.Description" />
+						<ValidationMessage For="() => newTransaction.Amount" />
 
-				<ValidationMessage For="() => newTransaction.Description" />
+						<label for="description">Описание: </label>
+						<InputText id="description" @bind-Value="newTransaction.Description" />
 
-				<button>Добавить</button>
+						<ValidationMessage For="() => newTransaction.Description" />
+
+						<button>Добавить</button>
+					</div>
+				</EditForm>
+
 			</div>
-		</EditForm>
+
+		</div>
+
+		<div class="grid-right responsive-table">
+			@if (transactions.Count < 1)
+			{
+				<h1>У Вас не было транзаций</h1>
+			}
+			else
+			{
+				<h1>Транзакции</h1>
+				<table>
+					<tr>
+						<th>Дата</th>
+						<th>Категория</th>
+						<th>Тип</th>
+						<th>Сумма</th>
+						<th>Описание</th>
+						<th>Действие</th>
+					</tr>
+					@foreach (var item in transactions)
+					{
+						<tr>
+							<td>@item.Date</td>
+							<td>@item.Category</td>
+							@if (item.Type == TransactionDto.TransactionType.Expense)
+							{
+								<th class="expense-text">Трата</th>
+							}
+							else
+							{
+								<th class="income-text">Доход</th>
+							}
+							<td>@item.Amount</td>
+							<td>@item.Description</td>
+							<td><button class="btn-danger" @onclick="() => DeleteItem(item.Id)">Удалить</button></td>
+						</tr>
+					}
+				</table>
+			}
+
+		</div>
 
 	</div>
 
-	@if (transactions.Count < 1)
-	{
-		<h1>У Вас не было транзаций</h1>
-	}
-	else
-	{
-		<h1>Транзакции</h1>
-		<table>
-			<tr>
-				<th>Дата</th>
-				<th>Категория</th>
-				<th>Тип</th>
-				<th>Сумма</th>
-				<th>Описание</th>
-				<th>Действие</th>
-			</tr>
-			@foreach (var item in transactions)
-			{
-				<tr>
-					<td>@item.Date</td>
-					<td>@item.Category</td>
-					@if (item.Type == TransactionDto.TransactionType.Expense)
-					{
-						<th class="expense-text">Трата</th>
-					}
-					else
-					{
-						<th class="income-text">Доход</th>
-					}
-					<td>@item.Amount</td>
-					<td>@item.Description</td>
-					<td><button class="btn-danger" @onclick="() => DeleteItem(item.Id)">Удалить</button></td>
-				</tr>
-			}
-		</table>
-	}
 }
 
 @code {
@@ -119,8 +133,10 @@ else
 
 	private TransactionDto newTransaction = new();
 
-	private decimal Incomes => transactions?.Where(t => t.Type == TransactionDto.TransactionType.Income).Sum(t => t.Amount) ?? 0;
-	private decimal Expenses => transactions?.Where(t => t.Type == TransactionDto.TransactionType.Expense).Sum(t => t.Amount) ?? 0;
+	private decimal Incomes => transactions?.Where(t => t.Type == TransactionDto.TransactionType.Income).Sum(t => t.Amount)
+?? 0;
+	private decimal Expenses => transactions?.Where(t => t.Type == TransactionDto.TransactionType.Expense).Sum(t =>
+t.Amount) ?? 0;
 	private decimal Balance => Incomes - Expenses;
 
 	protected override async Task OnInitializedAsync()
