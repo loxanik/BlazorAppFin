@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using BlazorAppFin.Client.Shared.DTOs
 @using BlazorAppFin.Client.Shared.Interfaces
+@using ApexCharts;
 @inject ITransactionService TransactionService
 
 <PageTitle>Dashboard</PageTitle>
@@ -84,7 +85,7 @@ else
 
 		</div>
 
-		<div class="grid-right responsive-table">
+		<div class="grid-right responsive-tab">
 			@if (transactions.Count < 1)
 			{
 				<h1>У Вас не было транзаций</h1>
@@ -92,6 +93,26 @@ else
 			else
 			{
 				<h1>Транзакции</h1>
+
+				@if (expensesChartData.Any())
+				{
+					<div class="chart-card">
+						
+						<ApexChart TItem="ExpenseSummary" 
+								Title="Структура расходов" 
+								Options="chartOptions"
+								Height="280"
+								Width="380">
+							<ApexPointSeries TItem="ExpenseSummary" 
+											Items="expensesChartData" 
+											XValue="@(e => e.Category)"
+											YValue="@(e => e.TotalAmount)" 
+											SeriesType="SeriesType.Donut" />
+						</ApexChart>
+
+					</div>
+				}
+
 				<table>
 					<tr>
 						<th>Дата</th>
@@ -130,13 +151,16 @@ else
 
 @code {
 	private List<TransactionDto>? transactions;
+	private List<ExpenseSummary> expensesChartData = [];
 
 	private TransactionDto newTransaction = new();
 
-	private decimal Incomes => transactions?.Where(t => t.Type == TransactionDto.TransactionType.Income).Sum(t => t.Amount)
-?? 0;
-	private decimal Expenses => transactions?.Where(t => t.Type == TransactionDto.TransactionType.Expense).Sum(t =>
-t.Amount) ?? 0;
+	private decimal Incomes => transactions?
+		.Where(t => t.Type == TransactionDto.TransactionType.Income)
+		.Sum(t => t.Amount) ?? 0;
+	private decimal Expenses => transactions?
+		.Where(t => t.Type == TransactionDto.TransactionType.Expense)
+		.Sum(t => t.Amount) ?? 0;
 	private decimal Balance => Incomes - Expenses;
 
 	protected override async Task OnInitializedAsync()
@@ -147,6 +171,19 @@ t.Amount) ?? 0;
 	private async Task LoadTransactions()
 	{
 		transactions = await TransactionService.GetTransactionsAsync();
+
+		if (transactions != null)
+		{
+			expensesChartData = transactions
+				.Where(t => t.Type == TransactionDto.TransactionType.Expense)
+				.GroupBy(t => t.Category)
+				.Select(g => new ExpenseSummary
+				{
+					Category = string.IsNullOrEmpty(g.Key) ? "Без категории" : g.Key,
+					TotalAmount = g.Sum(t => t.Amount)
+				})
+				.ToList();
+		}
 	}
 
 	private async Task HandleValidSubmit()
@@ -168,5 +205,24 @@ t.Amount) ?? 0;
 		{
 			await LoadTransactions();
 		}
+	}
+
+	private ApexChartOptions<ExpenseSummary> chartOptions = new()
+	{
+		Theme = new Theme
+		{
+			Mode = Mode.Dark,
+			Palette = PaletteType.Palette1
+		},
+		Chart = new Chart
+		{
+			Background = "transparent"
+		}
+	};
+
+	public class ExpenseSummary
+	{
+		public string Category { get; set; } = string.Empty;
+		public decimal TotalAmount;
 	}
 }
