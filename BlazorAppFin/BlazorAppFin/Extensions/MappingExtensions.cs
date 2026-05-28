@@ -11,7 +11,7 @@ public static class MappingExtensions
         {
             Id = entity.Id,
             Amount = entity.Amount,
-            Type = (TransactionDto.TransactionType) entity.Type,
+            Type = (TransactionDto.TransactionType?) entity.Type,
             Category = entity.Category,
             Date = entity.Date,
             Description = entity.Description

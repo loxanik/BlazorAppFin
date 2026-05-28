@@ -16,6 +16,7 @@ namespace BlazorAppFin.Client
             });
 
             builder.Services.AddScoped<ITransactionService, BlazorTransactionService>();
+            builder.Services.AddSingleton<ThemeState>();
 
             await builder.Build().RunAsync();
         }

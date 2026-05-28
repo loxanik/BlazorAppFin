@@ -1,8 +1,14 @@
 ﻿@page "/"
+
 @using BlazorAppFin.Client.Shared.DTOs
 @using BlazorAppFin.Client.Shared.Interfaces
+@using BlazorAppFin.Client.Services;
 @using ApexCharts;
+
 @inject ITransactionService TransactionService
+@inject ThemeState ThemeState
+
+@implements IDisposable
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -35,6 +41,25 @@ else
 
 	</div>
 
+	@if (balanceChartData.Any())
+	{
+		<div class="chart-card">
+			<ApexChart @ref="balanceChart"
+					TItem="BalanceHistoryPoint" 
+					Title="Динамика баланса"
+					Options="balanceChartOptions"
+					Height="250"
+					Width="380">
+
+				<ApexPointSeries TItem="BalanceHistoryPoint"
+								Items="balanceChartData"
+								XValue="@(b => b.DateLabel)"
+								YValue="@(b => (decimal?) b.BalanceSnapshot)"
+								SeriesType="SeriesType.Area"
+								Name="Баланс"
+								Color="#10b981" /> </ApexChart>
+		</div>
+	}
 	
 	<div class="dashboard-grid">
 
@@ -85,7 +110,7 @@ else
 
 		</div>
 
-		<div class="grid-right responsive-tab">
+		<div class="grid-right responsive-table">
 			@if (transactions.Count < 1)
 			{
 				<h1>У Вас не было транзаций</h1>
@@ -97,17 +122,16 @@ else
 				@if (expensesChartData.Any())
 				{
 					<div class="chart-card">
-						
-						<ApexChart TItem="ExpenseSummary" 
+
+						<ApexChart @ref="donutChart"
+								TItem="ExpenseSummary" 
 								Title="Структура расходов" 
-								Options="chartOptions"
-								Height="280"
+								Options="chartOptions" Height="280"
 								Width="380">
 							<ApexPointSeries TItem="ExpenseSummary" 
 											Items="expensesChartData" 
 											XValue="@(e => e.Category)"
-											YValue="@(e => e.TotalAmount)" 
-											SeriesType="SeriesType.Donut" />
+											YValue="@(e => e.TotalAmount)" SeriesType="SeriesType.Donut" />
 						</ApexChart>
 
 					</div>
@@ -152,7 +176,10 @@ else
 @code {
 	private List<TransactionDto>? transactions;
 	private List<ExpenseSummary> expensesChartData = [];
-
+	private List<BalanceHistoryPoint> balanceChartData = [];
+	
+	private ApexChart<BalanceHistoryPoint>? balanceChart;
+	private ApexChart<ExpenseSummary>? donutChart;
 	private TransactionDto newTransaction = new();
 
 	private decimal Incomes => transactions?
@@ -165,6 +192,7 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		ThemeState.OnChange += OnThemeChanged;
 		await LoadTransactions();
 	}
 
@@ -172,7 +200,7 @@ else
 	{
 		transactions = await TransactionService.GetTransactionsAsync();
 
-		if (transactions != null)
+		if (transactions != null && transactions.Any())
 		{
 			expensesChartData = transactions
 				.Where(t => t.Type == TransactionDto.TransactionType.Expense)
@@ -183,6 +211,30 @@ else
 					TotalAmount = g.Sum(t => t.Amount)
 				})
 				.ToList();
+
+			balanceChartData = new List<BalanceHistoryPoint>();
+			decimal runningBalance = 0;
+
+			var sortedTransactions = transactions
+				.OrderBy(t => t.Date)
+				.ToList();
+
+			foreach (var t in sortedTransactions)
+			{
+				if (t.Type == TransactionDto.TransactionType.Income)
+					runningBalance += t.Amount;
+				else
+					runningBalance -= t.Amount;
+
+				balanceChartData.Add(new BalanceHistoryPoint
+				{
+					DateLabel = t.Date,
+					BalanceSnapshot = runningBalance
+				});
+
+			}
+
+			StateHasChanged();
 		}
 	}
 
@@ -207,22 +259,100 @@ else
 		}
 	}
 
-	private ApexChartOptions<ExpenseSummary> chartOptions = new()
+	private async void OnThemeChanged()
+    {
+        StateHasChanged();
+        
+        if (balanceChart != null) await balanceChart.RenderAsync();
+        if (donutChart != null) await donutChart.RenderAsync();
+    }
+
+	public void Dispose()
+    {
+        ThemeState.OnChange -= OnThemeChanged;
+    }
+
+	private ApexChartOptions<ExpenseSummary> chartOptions
 	{
-		Theme = new Theme
+		get
 		{
-			Mode = Mode.Dark,
-			Palette = PaletteType.Palette1
-		},
-		Chart = new Chart
-		{
-			Background = "transparent"
+			return new ApexChartOptions<ExpenseSummary>
+			{
+				Theme = new Theme
+				{
+					Mode = ThemeState.IsDark ? Mode.Dark : Mode.Light,
+					Palette = PaletteType.Palette1
+				},
+				Chart = new Chart
+				{
+					Background = "transparent"
+				}
+			};
 		}
-	};
+	}
+
+	private ApexChartOptions<BalanceHistoryPoint> balanceChartOptions
+	{
+		get
+		{
+			return new ApexChartOptions<BalanceHistoryPoint>
+			{
+				Theme = new Theme
+				{
+					Mode = ThemeState.IsDark ? Mode.Dark : Mode.Light,
+					Palette = PaletteType.Palette1
+				},
+				Chart = new Chart
+				{
+					Background = "transparent",
+					Sparkline = new() { Enabled = false }
+				},
+				Stroke = new Stroke
+				{
+					Curve = Curve.Smooth,
+					Width = 3
+				},
+				Fill = new Fill
+				{
+					Type = FillType.Gradient,
+					Gradient = new()
+					{
+						Type = GradientType.Vertical,
+						ShadeIntensity = 1,
+						OpacityFrom = 0.45,
+						OpacityTo = 0.05,
+						Stops = [0, 100]
+					}
+				},
+				Xaxis = new XAxis
+				{
+					Type = XAxisType.Datetime,
+					Labels = new XAxisLabels
+					{
+						Format = "dd.MM",
+						DatetimeUTC = false
+					}
+				},
+				Tooltip = new Tooltip
+				{
+					X = new TooltipX
+					{
+						Format = "dd.MM.yyyy"
+					}
+				}
+			};
+		}
+	}
 
 	public class ExpenseSummary
 	{
 		public string Category { get; set; } = string.Empty;
-		public decimal TotalAmount;
+		public decimal TotalAmount { get; set; }
+	}
+
+	public class BalanceHistoryPoint
+	{
+		public DateTime DateLabel { get; set; }
+		public decimal BalanceSnapshot { get; set; }
 	}
 }

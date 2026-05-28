@@ -27,6 +27,7 @@ namespace BlazorAppFin
             });
 
             builder.Services.AddScoped<ITransactionService, BlazorAppFin.Client.Services.InMemoryTransactionService>();
+            builder.Services.AddScoped<BlazorAppFin.Client.Services.ThemeState>();
 
             var app = builder.Build();
 
