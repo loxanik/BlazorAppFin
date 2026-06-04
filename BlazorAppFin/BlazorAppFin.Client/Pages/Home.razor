@@ -44,23 +44,26 @@ else
 	@if (balanceChartData.Any())
 	{
 		<div class="chart-card">
-			<ApexChart @ref="balanceChart"
-					TItem="BalanceHistoryPoint" 
-					Title="Динамика баланса"
-					Options="balanceChartOptions"
-					Height="250"
-					Width="380">
+			<div style="width: 100%; min-width: 0; overflow: hidden;">
+				<ApexChart @ref="balanceChart"
+						   TItem="BalanceHistoryPoint"
+						   Title="Динамика баланса"
+						   Options="balanceChartOptions"
+						   Height="250"
+						   Width="@("100%")">
 
-				<ApexPointSeries TItem="BalanceHistoryPoint"
-								Items="balanceChartData"
-								XValue="@(b => b.DateLabel)"
-								YValue="@(b => (decimal?) b.BalanceSnapshot)"
-								SeriesType="SeriesType.Area"
-								Name="Баланс"
-								Color="#10b981" /> </ApexChart>
+					<ApexPointSeries TItem="BalanceHistoryPoint"
+									 Items="balanceChartData"
+									 XValue="@(b => b.DateLabel)"
+									 YValue="@(b => (decimal?) b.BalanceSnapshot)"
+									 SeriesType="SeriesType.Area"
+									 Name="Баланс"
+									 Color="#10b981" />
+				</ApexChart>
+			</div>
 		</div>
 	}
-	
+
 	<div class="dashboard-grid">
 
 		<div class="grid-left">
@@ -122,18 +125,18 @@ else
 				@if (expensesChartData.Any())
 				{
 					<div class="chart-card">
-
-						<ApexChart @ref="donutChart"
-								TItem="ExpenseSummary" 
-								Title="Структура расходов" 
-								Options="chartOptions" Height="280"
-								Width="380">
-							<ApexPointSeries TItem="ExpenseSummary" 
-											Items="expensesChartData" 
-											XValue="@(e => e.Category)"
-											YValue="@(e => e.TotalAmount)" SeriesType="SeriesType.Donut" />
-						</ApexChart>
-
+						<div style="width: 100%; min-width: 0; overflow: hidden;">
+							<ApexChart @ref="donutChart"
+									   TItem="ExpenseSummary"
+									   Title="Структура расходов"
+									   Options="chartOptions" Height="280"
+									   Width="@("100%")">
+								<ApexPointSeries TItem="ExpenseSummary"
+												 Items="expensesChartData"
+												 XValue="@(e => e.Category)"
+												 YValue="@(e => e.TotalAmount)" SeriesType="SeriesType.Donut" />
+							</ApexChart>
+						</div>
 					</div>
 				}
 
@@ -177,7 +180,7 @@ else
 	private List<TransactionDto>? transactions;
 	private List<ExpenseSummary> expensesChartData = [];
 	private List<BalanceHistoryPoint> balanceChartData = [];
-	
+
 	private ApexChart<BalanceHistoryPoint>? balanceChart;
 	private ApexChart<ExpenseSummary>? donutChart;
 	private TransactionDto newTransaction = new();
@@ -260,17 +263,17 @@ else
 	}
 
 	private async void OnThemeChanged()
-    {
-        StateHasChanged();
-        
-        if (balanceChart != null) await balanceChart.RenderAsync();
-        if (donutChart != null) await donutChart.RenderAsync();
-    }
+	{
+		StateHasChanged();
+
+		if (balanceChart != null) await balanceChart.RenderAsync();
+		if (donutChart != null) await donutChart.RenderAsync();
+	}
 
 	public void Dispose()
-    {
-        ThemeState.OnChange -= OnThemeChanged;
-    }
+	{
+		ThemeState.OnChange -= OnThemeChanged;
+	}
 
 	private ApexChartOptions<ExpenseSummary> chartOptions
 	{
